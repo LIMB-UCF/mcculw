@@ -70,7 +70,7 @@ def run_example():
         high_chan = chan
         num_chans = 1
         rate = 100
-        points_per_channel = 10000
+        points_per_channel = 1000
         total_count = points_per_channel * num_chans
 
         ao_range = ao_info.supported_ranges[0]
@@ -104,8 +104,9 @@ def run_example():
             if ai_info.resolution <= 16:
                 # Use the a_in method for devices with a resolution <= 16
                 value = ul.a_in(board_num, chan, ai_range)
+                value = ul.to_eng_units(board_num, ai_range, value)
                 value_list.append(value)
-                print('Time read loop', time.time())
+                #print('Time read loop', time.time())
                 #print('AI Value: ', ul.to_eng_units(board_num, ai_range, value))
             # Slow down the status check so as not to flood the CPU
             sleep(1/rate)
@@ -116,7 +117,7 @@ def run_example():
         print('Scan completed successfully')
         print('Time end', time.time())
         # Save the data to a CSV file
-        with open('output_data.csv', 'w', newline='') as csvfile:
+        with open('output_data1.csv', 'w', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
             csv_writer.writerow(['Index', 'Value'])
             for i, val in enumerate(value_list):
@@ -152,7 +153,8 @@ def add_example_data(board_num, data_array, ao_range, num_chans, rate,
         raw_value = ul.from_eng_units(board_num, ao_range, value)
         data_array[data_index] = raw_value
         data_index += 1
-        print('Time write loop', time.time())
+        #print('Time write loop', time.time())
+        print('Value written: ', value, 'Raw Value: ', raw_value)
         
         
 
