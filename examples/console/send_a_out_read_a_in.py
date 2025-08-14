@@ -30,6 +30,7 @@ from time import sleep
 from mcculw import ul
 from mcculw.enums import ScanOptions, FunctionType, Status
 from mcculw.device_info import DaqDeviceInfo
+from LoadWaveform import generate_waveform_dataarray
 
 try:
     from console_examples_util import config_first_detected_device
@@ -70,12 +71,24 @@ def run_example():
         low_chan = chan
         high_chan = chan
         num_chans = 1
-        rate = 100
-        points_per_channel = 1000
-        total_count = points_per_channel * num_chans # total number of data points to output, important for timing
+        # rate = 100
+        # points_per_channel = 1000
+        # total_count = points_per_channel * num_chans # total number of data points to output, important for timing
 
         ao_range = ao_info.supported_ranges[0]
 
+
+        # Adding variables for my own function
+        time_stim = 100 * 10**(-6)
+        amplitude2 = 1
+        frequency = 1
+        Limit = 1 * 10**6  # 1 million points per second
+        points_per_channel = int(time_stim * Limit)
+        rate = int(points_per_channel / time_stim)
+        waveform_type = 'sine'  # 'sine' or 'square'
+        total_count = points_per_channel * num_chans
+
+        
         # Allocate a buffer for the scan
         memhandle = ul.win_buf_alloc(total_count)
         # Convert the memhandle to a ctypes array
@@ -89,9 +102,10 @@ def run_example():
         if not memhandle:
             raise Exception('Error: Failed to allocate memory')
 
-        frequencies = add_example_data(board_num, ctypes_array, ao_range,
-                                       num_chans, rate, points_per_channel)
+        # frequencies = add_example_data(board_num, ctypes_array, ao_range,
+        #                                num_chans, rate, points_per_channel)
 
+        generate_waveform_dataarray(board_num, ao_range, ctypes_array, points_per_channel, rate, time_stim, amplitude2, frequency, waveform_type)
 
         # Start the scan
         print('Time start', time.time())
@@ -101,6 +115,7 @@ def run_example():
         # Wait for the scan to complete
         print('Waiting for output scan to complete...', end='')
         status = Status.RUNNING
+        print('Time read loop', time.time())
         while status != Status.IDLE:
             if ai_info.resolution <= 16:
                 # Use the a_in method for devices with a resolution <= 16
