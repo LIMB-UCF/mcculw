@@ -66,12 +66,13 @@ def run_example():
         ai_info = daq_dev_info.get_ai_info()
         ai_range = ai_info.supported_ranges[0]
         chan = 0
+        chanin = 0
         low_chan = chan
         high_chan = chan
         num_chans = 1
         rate = 100
         points_per_channel = 1000
-        total_count = points_per_channel * num_chans
+        total_count = points_per_channel * num_chans # total number of data points to output, important for timing
 
         ao_range = ao_info.supported_ranges[0]
 
@@ -103,7 +104,7 @@ def run_example():
         while status != Status.IDLE:
             if ai_info.resolution <= 16:
                 # Use the a_in method for devices with a resolution <= 16
-                value = ul.a_in(board_num, chan, ai_range)
+                value = ul.a_in(board_num, chanin, ai_range)
                 value = ul.to_eng_units(board_num, ai_range, value)
                 value_list.append(value)
                 #print('Time read loop', time.time())
@@ -149,7 +150,7 @@ def add_example_data(board_num, data_array, ao_range, num_chans, rate,
     for point_num in range(points_per_channel): #points_per_channel,freq and rate dictate how long the output will run
 #        for channel_num in range(num_chans):
         freq = 1
-        value = amplitude/10 * sin(2 * pi * freq * point_num / rate) + y_offset
+        value = amplitude/10 * sin(2 * pi * freq * point_num / rate) + y_offset # amplitude = 10v
         raw_value = ul.from_eng_units(board_num, ao_range, value)
         data_array[data_index] = raw_value
         data_index += 1
