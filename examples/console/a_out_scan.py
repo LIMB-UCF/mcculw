@@ -36,6 +36,7 @@ try:
 except ImportError:
     from .console_examples_util import config_first_detected_device
 
+import time
 
 def run_example():
     # By default, the example detects and displays all available devices and
@@ -62,10 +63,10 @@ def run_example():
 
         ao_info = daq_dev_info.get_ao_info()
 
-        low_chan = 0
-        high_chan = min(3, ao_info.num_chans - 1)
-        num_chans = high_chan - low_chan + 1
-
+        chan = 0
+        low_chan = chan
+        high_chan = chan
+        num_chans = 1
         rate = 100
         points_per_channel = 1000
         total_count = points_per_channel * num_chans
@@ -88,9 +89,7 @@ def run_example():
         frequencies = add_example_data(board_num, ctypes_array, ao_range,
                                        num_chans, rate, points_per_channel)
 
-        for ch_num in range(low_chan, high_chan + 1):
-            print('Channel', ch_num, 'Output Signal Frequency:',
-                  frequencies[ch_num - low_chan])
+
 
         # Start the scan
         ul.a_out_scan(board_num, low_chan, high_chan, total_count, rate,
@@ -122,10 +121,6 @@ def run_example():
 def add_example_data(board_num, data_array, ao_range, num_chans, rate,
                      points_per_channel):
     # Calculate frequencies that will work well with the size of the array
-    frequencies = []
-    for channel_num in range(num_chans):
-        frequencies.append(
-            (channel_num + 1) / (points_per_channel / rate) * 10)
 
     # Calculate an amplitude and y-offset for the signal
     # to fill the analog output range
@@ -137,15 +132,15 @@ def add_example_data(board_num, data_array, ao_range, num_chans, rate,
     # added to data_array are the actual voltage values that the device
     # will output
     data_index = 0
-    for point_num in range(points_per_channel):
-        for channel_num in range(num_chans):
-            freq = frequencies[channel_num]
-            value = amplitude * sin(2 * pi * freq * point_num / rate) + y_offset
-            raw_value = ul.from_eng_units(board_num, ao_range, value)
-            data_array[data_index] = raw_value
-            data_index += 1
+    for point_num in range(points_per_channel): #points_per_channel,freq and rate dictate how long the output will run
+#        for channel_num in range(num_chans):
+        freq = 1
+        value = amplitude/10 * sin(2 * pi * freq * point_num / rate) + 0
+        raw_value = ul.from_eng_units(board_num, ao_range, value)
+        data_array[data_index] = raw_value
+        data_index += 1
 
-    return frequencies
+    return time.time()
 
 
 if __name__ == '__main__':

@@ -72,8 +72,8 @@ def run_example():
         ai_info = daq_dev_info.get_ai_info()
 
         low_chan = 0
-        high_chan = min(3, ai_info.num_chans - 1)
-        num_chans = high_chan - low_chan + 1
+        high_chan = 0
+        num_chans = 1
 
         # Create a circular buffer that can hold buffer_size_seconds worth of
         # data, or at least 10 points (this may need to be adjusted to prevent

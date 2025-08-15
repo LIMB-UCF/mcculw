@@ -79,7 +79,7 @@ def run_example():
 
 
         # Adding variables for my own function
-        time_stim = 100 * 10**(-6)
+        time_stim = 10 # seconds to run the output
         amplitude2 = 1
         frequency = 1
         Limit = 1 * 10**6  # 1 million points per second
@@ -102,10 +102,10 @@ def run_example():
         if not memhandle:
             raise Exception('Error: Failed to allocate memory')
 
-        # frequencies = add_example_data(board_num, ctypes_array, ao_range,
-        #                                num_chans, rate, points_per_channel)
+        add_example_data(board_num, ctypes_array, ao_range,
+                                        num_chans, rate, points_per_channel)
 
-        generate_waveform_dataarray(board_num, ao_range, ctypes_array, points_per_channel, rate, time_stim, amplitude2, frequency, waveform_type)
+        #generate_waveform_dataarray(board_num, ao_range, ctypes_array, points_per_channel, rate, time_stim, amplitude2, frequency, waveform_type)
 
         # Start the scan
         print('Time start', time.time())
