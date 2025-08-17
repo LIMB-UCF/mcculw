@@ -40,8 +40,9 @@ except ImportError:
     from .console_examples_util import config_first_detected_device
 
 import time
+import matplotlib.pyplot as plt
 
-def run_example():
+def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID):
     # By default, the example detects and displays all available devices and
     # selects the first device listed. Use the dev_id_list variable to filter
     # detected devices by device ID (see UL documentation for device IDs).
@@ -70,20 +71,10 @@ def run_example():
         low_chan = chan
         high_chan = chan
         num_chans = 1
-        # IMPORTANT: RATE MUST BE 2 * N THE POINTS SO THAT WE GET HALF THE PHASE OF SINE
-        rate = 200 # 100000 for 100us
-        points_per_channel = 100 # 50 for 100us
-        delaytime = 0.1
-        delaycount = int(delaytime * rate)
-        CathodicTime = 1
-        Cathodiccount = int(CathodicTime * rate)
+        # IMPORTANT: RATE MUST BE 2 * N THE POINTS SO THAT WE GET HALF THE PHASE OF SINE (changes with frequency, currently 1Hz)
         EndZeroTime = 0.1
         EndZerocount = int(EndZeroTime * rate)
         total_count = (points_per_channel * num_chans) + delaycount + Cathodiccount + EndZerocount # total number of data points to output, important for timing
-        amplitude = 3
-        freq = 1
-        waveform_type = 'sawtooth' # 'sine' or 'square' or 'triangle' or 'sawtooth' or 'inv_sawtooth'
-        numwaveform = 4 # tested, there is no delay between each waveform being sent
         ao_range = ao_info.supported_ranges[0]
 
         # Allocate a buffer for the scan
@@ -101,7 +92,7 @@ def run_example():
 
         add_example_data(board_num, ctypes_array, ao_range,
                                     num_chans, freq, rate, points_per_channel,
-                                    amplitude, waveform_type, delaycount, Cathodiccount, EndZerocount)
+                                    amplitude, WaveID, delaycount, Cathodiccount, EndZerocount)
 
         # these two lines dont completely work. shortens the negative pulse but causes a delay
         first_code = ctypes_array[0]
@@ -140,32 +131,32 @@ def add_example_data(board_num, data_array, ao_range, num_chans, freq, rate,
     # added to data_array are the actual voltage values that the device
     # will output
     data_index = 0
-    if waveform_type == 'sine':
+    if waveform_type == 1:
         for point_num in range(points_per_channel): #points_per_channel,freq and rate dictate how long the output will run
     #        for channel_num in range(num_chans):
             value = -amplitude * sin(2 * pi * freq * point_num / rate) + 0
             raw_value = ul.from_eng_units(board_num, ao_range, value)
             data_array[data_index] = raw_value
             data_index += 1
-    elif waveform_type == 'square':
+    elif waveform_type == 2:
         for point_num in range(points_per_channel):
             value = -amplitude * np.sign(sin(2 * pi * freq * point_num / rate)) + 0
             raw_value = ul.from_eng_units(board_num, ao_range, value)
             data_array[data_index] = raw_value
             data_index += 1
-    elif waveform_type == 'triangle':
+    elif waveform_type == 3:
         for point_num in range(points_per_channel):
             value = -amplitude * np.arcsin(np.sin(2 * np.pi * freq * point_num / rate)) * 2 / np.pi
             raw_value = ul.from_eng_units(board_num, ao_range, value)
             data_array[data_index] = raw_value
             data_index += 1
-    elif waveform_type == 'sawtooth':
+    elif waveform_type == 4:
         for point_num in range(points_per_channel):
             value = -amplitude * np.linspace(0, 1, points_per_channel)[point_num]
             raw_value = ul.from_eng_units(board_num, ao_range, value)
             data_array[data_index] = raw_value
             data_index += 1
-    elif waveform_type == 'inv_sawtooth':
+    elif waveform_type == 5:
         for point_num in range(points_per_channel):
             value = -amplitude * np.linspace(1, 0, points_per_channel)[point_num]
             raw_value = ul.from_eng_units(board_num, ao_range, value)
