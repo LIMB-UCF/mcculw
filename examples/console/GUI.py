@@ -106,8 +106,8 @@ class GUI:
 
     def start_stim(self):
         # Get values from entries
-        amplitude = float(self.amplitude_entry.get())
-        frequency = float(self.freq_entry.get())
+        amplitude = int(self.amplitude_entry.get())
+        frequency = int(self.freq_entry.get())
         rate = int(self.rate_entry.get())
         points_per_channel = int(self.samples_entry.get())
         delaytime = float(self.delay_entry.get())

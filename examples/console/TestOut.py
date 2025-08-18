@@ -76,7 +76,7 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
         # IMPORTANT: RATE MUST BE 2 * N THE POINTS SO THAT WE GET HALF THE PHASE OF SINE (changes with frequency, currently 1Hz)
         EndZeroTime = 0.1
         EndZerocount = int(EndZeroTime * rate)
-        total_count = (points_per_channel * num_chans) + delaycount + Cathodiccount + EndZerocount # total number of data points to output, important for timing
+        total_count = int((points_per_channel * num_chans) + delaycount + Cathodiccount + EndZerocount) # total number of data points to output, important for timing
         ao_range = ao_info.supported_ranges[0]
         # Allocate a buffer for the scan
         memhandle = ul.win_buf_alloc(total_count)
@@ -110,8 +110,9 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
             while status != Status.IDLE:
                 if ai_info.resolution <= 16:
                     # Use the a_in method for devices with a resolution <= 16
-                    value = ul.a_in(board_num, 0, ai_range)
+                    value = ul.a_in(board_num, 0, ai_range) # for some reason this is working for A1
                     value = ul.to_eng_units(board_num, ai_range, value)
+                    value = value # negate the value to match the true output due to flipping polarity at input
                     value_list.append(value)
                 sleep(1/rate)
                 status, _, _ = ul.get_status(board_num, FunctionType.AOFUNCTION)
@@ -131,6 +132,18 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
             ul.win_buf_free(memhandle)
         if use_device_detection:
             ul.release_daq_device(board_num)
+        plt.plot(value_list, marker='o', linestyle='-', color='b')
+
+        # Add labels and title
+        plt.xlabel("Index")
+        plt.ylabel("Value")
+        plt.title("Array Plot")
+
+        # Show grid
+        plt.grid(True)
+
+        # Display the plot
+        plt.show()
 
 
 def add_example_data(board_num, data_array, ao_range, num_chans, freq, rate,
