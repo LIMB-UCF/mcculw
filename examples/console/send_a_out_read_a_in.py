@@ -80,7 +80,7 @@ def run_example():
 
         # Adding variables for my own function
         time_stim = 10 # seconds to run the output
-        amplitude2 = 1
+        amplitude = 1
         frequency = 1
         Limit = 1 * 10**6  # 1 million points per second
         points_per_channel = int(time_stim * Limit)
@@ -163,16 +163,11 @@ def add_example_data(board_num, data_array, ao_range, num_chans, rate,
     # will output
     data_index = 0
     for point_num in range(points_per_channel): #points_per_channel,freq and rate dictate how long the output will run
-#        for channel_num in range(num_chans):
         freq = 1
         value = amplitude/10 * sin(2 * pi * freq * point_num / rate) + y_offset # amplitude = 10v
         raw_value = ul.from_eng_units(board_num, ao_range, value)
         data_array[data_index] = raw_value
         data_index += 1
-        #print('Time write loop', time.time())
-        print('Value written: ', value, 'Raw Value: ', raw_value)
-        
-        
 
     return time.time()
 

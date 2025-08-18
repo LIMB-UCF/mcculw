@@ -116,10 +116,11 @@ class GUI:
         Cathodiccount = int(CathodicTime * rate)
         numwaveform = int(self.numwave_entry.get())
         WaveID = self.waveSelection.get()
+        trialnum = self.trialcount
 
         # Update trial count
         self.trialcount += 1
         self.trialcount_entryvar.set(str(self.trialcount))
 
         # Call the function to run the example
-        run_example(amplitude, frequency, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID)
+        run_example(amplitude, frequency, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,trialnum)

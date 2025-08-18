@@ -32,7 +32,7 @@ import numpy as np
 
 from mcculw import ul
 from mcculw.enums import ScanOptions, FunctionType, Status
-from mcculw.device_info import DaqDeviceInfo
+from mcculw.device_info import DaqDeviceInfo, ai_info
 
 try:
     from console_examples_util import config_first_detected_device
@@ -41,8 +41,9 @@ except ImportError:
 
 import time
 import matplotlib.pyplot as plt
+import csv
 
-def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID):
+def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,trialnum):
     # By default, the example detects and displays all available devices and
     # selects the first device listed. Use the dev_id_list variable to filter
     # detected devices by device ID (see UL documentation for device IDs).
@@ -52,7 +53,7 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
     dev_id_list = []
     board_num = 0
     memhandle = None
-
+    value_list = []
     try:
         if use_device_detection:
             config_first_detected_device(board_num, dev_id_list)
@@ -66,7 +67,8 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
               daq_dev_info.unique_id, ')\n', sep='')
 
         ao_info = daq_dev_info.get_ao_info()
-
+        ai_info = daq_dev_info.get_ai_info()
+        ai_range = ai_info.supported_ranges[0]
         chan = 0
         low_chan = chan
         high_chan = chan
@@ -76,7 +78,6 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
         EndZerocount = int(EndZeroTime * rate)
         total_count = (points_per_channel * num_chans) + delaycount + Cathodiccount + EndZerocount # total number of data points to output, important for timing
         ao_range = ao_info.supported_ranges[0]
-
         # Allocate a buffer for the scan
         memhandle = ul.win_buf_alloc(total_count)
         # Convert the memhandle to a ctypes array
@@ -107,12 +108,21 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
             print('Waiting for output scan to complete...', end='')
             status = Status.RUNNING
             while status != Status.IDLE:
-                #print('.', end='')
-
+                if ai_info.resolution <= 16:
+                    # Use the a_in method for devices with a resolution <= 16
+                    value = ul.a_in(board_num, 0, ai_range)
+                    value = ul.to_eng_units(board_num, ai_range, value)
+                    value_list.append(value)
+                sleep(1/rate)
                 status, _, _ = ul.get_status(board_num, FunctionType.AOFUNCTION)
             print('')
 
             print('Scan completed successfully')
+            with open('output_dataGUI_%d.csv' % trialnum, 'w', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerow(['Index', 'Value'])
+                for i, val in enumerate(value_list):
+                    csv_writer.writerow([i, val])
     except Exception as e:
         print('\n', e)
     finally:
@@ -130,44 +140,54 @@ def add_example_data(board_num, data_array, ao_range, num_chans, freq, rate,
     # Note that since we are using the SCALEDATA option, the values
     # added to data_array are the actual voltage values that the device
     # will output
+    data1_array = [0] * (points_per_channel)
     data_index = 0
     if waveform_type == 1:
         for point_num in range(points_per_channel): #points_per_channel,freq and rate dictate how long the output will run
     #        for channel_num in range(num_chans):
             value = -amplitude * sin(2 * pi * freq * point_num / rate) + 0
             raw_value = ul.from_eng_units(board_num, ao_range, value)
+            data1_array[data_index] = value
             data_array[data_index] = raw_value
             data_index += 1
     elif waveform_type == 2:
         for point_num in range(points_per_channel):
             value = -amplitude * np.sign(sin(2 * pi * freq * point_num / rate)) + 0
             raw_value = ul.from_eng_units(board_num, ao_range, value)
+            data1_array[data_index] = value
             data_array[data_index] = raw_value
             data_index += 1
     elif waveform_type == 3:
         for point_num in range(points_per_channel):
             value = -amplitude * np.arcsin(np.sin(2 * np.pi * freq * point_num / rate)) * 2 / np.pi
             raw_value = ul.from_eng_units(board_num, ao_range, value)
+            data1_array[data_index] = value
             data_array[data_index] = raw_value
             data_index += 1
     elif waveform_type == 4:
         for point_num in range(points_per_channel):
             value = -amplitude * np.linspace(0, 1, points_per_channel)[point_num]
             raw_value = ul.from_eng_units(board_num, ao_range, value)
+            data1_array[data_index] = value
             data_array[data_index] = raw_value
             data_index += 1
     elif waveform_type == 5:
         for point_num in range(points_per_channel):
             value = -amplitude * np.linspace(1, 0, points_per_channel)[point_num]
+            data1_array[data_index] = value
             raw_value = ul.from_eng_units(board_num, ao_range, value)
             data_array[data_index] = raw_value
             data_index += 1
+    x = np.arange(points_per_channel)
+    area = abs(np.trapz(data1_array, x))
+    cathodicamplitude = area/Cathodiccount
+
     for i in range(0, delaycount): # delay period, output 0v
         raw_value = ul.from_eng_units(board_num, ao_range, 0)
         data_array[data_index] = raw_value
         data_index += 1
     for i in range(0, Cathodiccount): # Cathodic period, output 0v
-        raw_value = ul.from_eng_units(board_num, ao_range, amplitude/2)
+        raw_value = ul.from_eng_units(board_num, ao_range, cathodicamplitude)
         data_array[data_index] = raw_value
         data_index += 1
     for i in range(0, EndZerocount): # End Zero period, output 0v
