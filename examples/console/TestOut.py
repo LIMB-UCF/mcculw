@@ -96,7 +96,7 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
                                     amplitude, WaveID, delaycount, Cathodiccount, EndZerocount)
 
         # these two lines dont completely work. shortens the negative pulse but causes a delay
-        first_code = ctypes_array[0]
+        first_code = ul.from_eng_units(board_num, ao_range, 0)
         ul.a_out(board_num, 0, ao_range, first_code)
         # Start the scan
         
@@ -132,18 +132,18 @@ def run_example(amplitude, freq, rate, points_per_channel, delaycount, Cathodicc
             ul.win_buf_free(memhandle)
         if use_device_detection:
             ul.release_daq_device(board_num)
-        plt.plot(value_list, marker='o', linestyle='-', color='b')
+        # plt.plot(value_list, marker='o', linestyle='-', color='b')
 
-        # Add labels and title
-        plt.xlabel("Index")
-        plt.ylabel("Value")
-        plt.title("Array Plot")
+        # # Add labels and title
+        # plt.xlabel("Index")
+        # plt.ylabel("Value")
+        # plt.title("Array Plot")
 
-        # Show grid
-        plt.grid(True)
+        # # Show grid
+        # plt.grid(True)
 
-        # Display the plot
-        plt.show()
+        # # Display the plot
+        # plt.show()
 
 
 def add_example_data(board_num, data_array, ao_range, num_chans, freq, rate,

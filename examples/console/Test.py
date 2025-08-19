@@ -11,22 +11,21 @@ import matplotlib.pyplot as plt
 
 import time
 
-def testingIntegral(amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, waveform_type):
+def testingIntegral(amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,trialnum):
 
     chan = 0
     low_chan = chan
     high_chan = chan
     num_chans = 1
     # IMPORTANT: RATE MUST BE 2 * N THE POINTS SO THAT WE GET HALF THE PHASE OF SINE (changes with frequency, currently 1Hz)
-    delaycount = int(delaycount)
-    Cathodiccount = int(Cathodiccount)
     EndZeroTime = 0.1
     EndZerocount = int(EndZeroTime * rate)
-    total_count = (points_per_channel * num_chans) + delaycount + Cathodiccount + EndZerocount # total number of data points to output, important for timing
+    total_count = int((points_per_channel * num_chans) + delaycount + Cathodiccount + EndZerocount) # total number of data points to output, important for timing
+    numwaveform = 4 # tested, there is no delay between each waveform being sent
     data_array = [0] * total_count
     add_example_data( data_array,
                                 num_chans, freq, rate, points_per_channel,
-                                amplitude, waveform_type, delaycount, Cathodiccount, EndZerocount)
+                                amplitude, WaveID, delaycount, Cathodiccount, EndZerocount)
     plt.plot(data_array, marker='o', linestyle='-', color='b')
 
     # Add labels and title
