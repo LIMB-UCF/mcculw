@@ -43,6 +43,10 @@ class UserGUI:
         self.buttontextlabel.grid(column=0,row=0)
         self.detectionbutton = Button(self.general_frame, text='button :-)', command=self.show_hand)
         self.detectionbutton.grid(column=0,row=1, padx=5,pady=5)
+        self.exitbuttonlabel = Label(self.general_frame, text = "Press this button to exit the app")
+        self.exitbuttonlabel.grid(column=0,row=2)
+        self.exitbutton = Button(self.general_frame, text='Exit', command=self.window.quit)
+        self.exitbutton.grid(column=0,row=3, padx=5,pady=5)
 
         #wait x seconds then send another waveform
         self.after_id = self.window.after(3000, self.sendwaveformincrease)
