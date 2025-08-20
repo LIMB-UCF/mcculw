@@ -16,10 +16,13 @@ class UserGUI:
     def __init__(self):
         # Initialize
         print('Initializing')
-        self.trialcount = 0
         self.amplitude = 0
         self.trialnum = 0
-        self.waveform_number = 5 # used for waveform_parameters_func
+        self.waveform_number = 6 # used for waveform_parameters_func
+        self.stimtime = 900 #microseconds
+        self.repetitions = 1 # 1 or 15
+        self.current_report = 0
+        self.last_report = 0
         #self.params = ['# trial', 'amplitude (V)','frequency (Hz)','Rate','Samples','Waveform type', 'Delay Time', 'Cathodic Time','# waves']
         self.createWindow()
 
@@ -42,7 +45,7 @@ class UserGUI:
         self.detectionbutton.grid(column=0,row=1, padx=5,pady=5)
 
         #wait x seconds then send another waveform
-        self.after_id = self.window.after(3000, self.sendwaveform)
+        self.after_id = self.window.after(3000, self.sendwaveformincrease)
 
         #keeps window up, keep at end of this function
         self.window.mainloop()
@@ -52,15 +55,25 @@ class UserGUI:
             self.window.after_cancel(self.after_id)
             self.after_id = None
             print("Waveform loop ended!")
-        draw_on_image_and_save('output_hand_model', 1)
+        self.current_report = 1
+        draw_on_image_and_save('output_hand_model', 1, self.amplitude, self.trialnum)
+        if self.last_report == 1:
+            self.after_id = self.window.after(3000, self.sendwaveformdecrease)
+        elif self.last_report == 0 and self.current_report == 1:
+            self.after_id = self.window.after(3000, self.sendwaveformNoChange)
+        else:
+            self.after_id = self.window.after(3000, self.sendwaveformincrease)
 
-    def sendwaveform(self):
-        params = waveform_parameters_func(self.waveform_number)
+    def sendwaveformincrease(self):
+        params = waveform_parameters_func(self.waveform_number, self.stimtime, self.repetitions)
+        self.last_report = self.current_report
+        self.current_report = 0
         self.amplitude += 1
         self.trialnum +=1
         if self.amplitude > 8:
             messagebox.showinfo("Warning", "Amplitude is too high, resetting to 0")
             self.amplitude = 0
+            self.sendwaveformincrease()
         else:
             freq = params['frequency']
             rate = params['rate']
@@ -72,4 +85,45 @@ class UserGUI:
             Cathodictime = params['cathodic_time']
             Cathodiccount = int(Cathodictime * rate)
             run_example(self.amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,self.trialnum)
-            self.after_id = self.window.after(3000, self.sendwaveform)
+            self.after_id = self.window.after(3000, self.sendwaveformincrease)
+
+    def sendwaveformdecrease(self):
+        params = waveform_parameters_func(self.waveform_number, self.stimtime, self.repetitions)
+        self.last_report = self.current_report
+        self.current_report = 0
+        self.amplitude -= 1
+        self.trialnum +=1
+        if self.amplitude < 0:
+            messagebox.showinfo("Warning", "Amplitude is too low, resetting to 0 and increasing")
+            self.amplitude = 0
+            self.sendwaveformincrease()
+        else:
+            freq = params['frequency']
+            rate = params['rate']
+            points_per_channel = params['points_per_channel']
+            numwaveform = params['number_of_waveforms']
+            WaveID = params['waveform_type']
+            delaytime = params['delay_time']
+            delaycount = int(delaytime * rate)
+            Cathodictime = params['cathodic_time']
+            Cathodiccount = int(Cathodictime * rate)
+            run_example(self.amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,self.trialnum)
+            self.after_id = self.window.after(3000, self.sendwaveformincrease)
+
+
+    def sendwaveformNoChange(self):
+        params = waveform_parameters_func(self.waveform_number, self.stimtime, self.repetitions)
+        self.last_report = self.current_report
+        self.current_report = 0
+        self.trialnum +=1
+        freq = params['frequency']
+        rate = params['rate']
+        points_per_channel = params['points_per_channel']
+        numwaveform = params['number_of_waveforms']
+        WaveID = params['waveform_type']
+        delaytime = params['delay_time']
+        delaycount = int(delaytime * rate)
+        Cathodictime = params['cathodic_time']
+        Cathodiccount = int(Cathodictime * rate)
+        run_example(self.amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,self.trialnum)
+        self.after_id = self.window.after(3000, self.sendwaveformincrease)
