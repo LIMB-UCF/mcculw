@@ -265,5 +265,4 @@ def waveform_parameters_func(waveform_number, stimtime, repetitions):
                     'waveform_type': 1,  # Sine wave
                     'number_of_waveforms': repetitions,  # Number of waveforms
                     'delay_time': 0.1,  # Delay time in seconds
-                    'cathodic_time': 0.2  # Cathodic time in seconds
                 }

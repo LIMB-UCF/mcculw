@@ -1,7 +1,10 @@
 from tkinter import *
 from tkinter import messagebox
+from customtkinter import CTk, CTkLabel, CTkButton, set_appearance_mode, CTkImage
+import customtkinter
 import datetime
 import os
+from PIL import Image
 from Test import testingIntegral
 from Test import add_example_data
 from TestOut import run_example
@@ -30,28 +33,21 @@ class UserGUI:
         selection = "you selected the option"
 
     def createWindow(self):
-        self.window = Tk()
+        self.window = CTk()
         self.window.geometry('600x800')
-        self.window.title('Welcome to the wrist stimulator app')
+        set_appearance_mode("dark")
+        CTkLabel(master=self.window, text="Press this button when you experience stimulation", font=("Arial Bold", 20), text_color="#FFFFFF").pack(anchor="nw", padx=(50,0))
+        CTkButton(master=self.window, text="This is the button!!!! :-)", font=("Arial Bold", 20), command = self.show_hand, hover_color="#299039", fg_color="#35B248").pack(fill="x", ipady=15, pady=(50, 0), padx=50)
 
-        # Frames
-        self.general_frame= LabelFrame(self.window, bd = 10,   text = 'General')
-        self.general_frame.pack(side = 'top', fill='x',expand=TRUE)
+        self.movies_img_data = Image.open("examples/console/Ucf-Logo-PNG-Pic.png")
+        self.movies_img = CTkImage(light_image=self.movies_img_data, dark_image=self.movies_img_data, size=(234,234))
+        CTkLabel(master=self.window, text="", image=self.movies_img,corner_radius=8).pack(fill="x", ipady=25, pady=(75, 0), padx=75)
 
-        # Text in Frame
-        self.buttontextlabel = Label(self.general_frame, text = "Please press this button when you experience sensation!")
-        self.buttontextlabel.grid(column=0,row=0)
-        self.detectionbutton = Button(self.general_frame, text='button :-)', command=self.show_hand)
-        self.detectionbutton.grid(column=0,row=1, padx=5,pady=5)
-        self.exitbuttonlabel = Label(self.general_frame, text = "Press this button to exit the app")
-        self.exitbuttonlabel.grid(column=0,row=2)
-        self.exitbutton = Button(self.general_frame, text='Exit', command=self.window.quit)
-        self.exitbutton.grid(column=0,row=3, padx=5,pady=5)
-
-        #wait x seconds then send another waveform
+        self.LIMB_data = Image.open("examples/console/LIMB-logo.png")
+        self.LIMB_img = CTkImage(light_image=self.LIMB_data, dark_image=self.LIMB_data, size=(184,234))
+        CTkLabel(master=self.window, text="", image=self.LIMB_img,corner_radius=8).pack(fill="x", ipady=25, pady=(75, 0), padx=75)
         self.after_id = self.window.after(3000, self.sendwaveformincrease)
 
-        #keeps window up, keep at end of this function
         self.window.mainloop()
 
     def show_hand(self):
@@ -86,9 +82,7 @@ class UserGUI:
             WaveID = params['waveform_type']
             delaytime = params['delay_time']
             delaycount = int(delaytime * rate)
-            Cathodictime = params['cathodic_time']
-            Cathodiccount = int(Cathodictime * rate)
-            run_example(self.amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,self.trialnum)
+            run_example(self.amplitude, freq, rate, points_per_channel, delaycount, numwaveform, WaveID, self.trialnum)
             self.after_id = self.window.after(3000, self.sendwaveformincrease)
 
     def sendwaveformdecrease(self):
@@ -109,9 +103,7 @@ class UserGUI:
             WaveID = params['waveform_type']
             delaytime = params['delay_time']
             delaycount = int(delaytime * rate)
-            Cathodictime = params['cathodic_time']
-            Cathodiccount = int(Cathodictime * rate)
-            run_example(self.amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,self.trialnum)
+            run_example(self.amplitude, freq, rate, points_per_channel, delaycount, numwaveform, WaveID, self.trialnum)
             self.after_id = self.window.after(3000, self.sendwaveformincrease)
 
 
@@ -127,7 +119,5 @@ class UserGUI:
         WaveID = params['waveform_type']
         delaytime = params['delay_time']
         delaycount = int(delaytime * rate)
-        Cathodictime = params['cathodic_time']
-        Cathodiccount = int(Cathodictime * rate)
-        run_example(self.amplitude, freq, rate, points_per_channel, delaycount, Cathodiccount, numwaveform, WaveID,self.trialnum)
+        run_example(self.amplitude, freq, rate, points_per_channel, delaycount, numwaveform, WaveID, self.trialnum)
         self.after_id = self.window.after(3000, self.sendwaveformincrease)
